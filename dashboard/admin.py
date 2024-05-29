@@ -2,7 +2,13 @@ import customtkinter as ctk
 import paynow
 from dotenv import load_dotenv
 import os
-import sqlite3
+import sys
+import os
+import datetime
+
+parent_dir = os.path.abspath(".")
+sys.path.insert(0, parent_dir)
+from database.models import session, Cars
 
 
 root = ctk.CTk()
@@ -375,7 +381,7 @@ def show_allotment_frame():
         "Make",
         "Model",
         "Year",
-        "Parked",
+        "Parked (Yes/No)",
         "Vehicle Type",
         "Time In",
         "Time Out",
@@ -396,21 +402,128 @@ def show_allotment_frame():
         entry.grid(row=i // 2, column=i % 2, padx=10, pady=10)
         entries.append(entry)
 
-        button_frame = ctk.CTkFrame(entry_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd")
+        button_frame = ctk.CTkFrame(
+            entry_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd"
+        )
         button_frame.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
 
-        button1 = ctk.CTkButton(button_frame, text="Status", font=("Inter", 16), fg_color="#f5f5f5", hover_color="#ddd",text_color="#000", height=40)
-        button1.pack(side="left", padx=5)
+        status = ctk.CTkButton(
+            button_frame,
+            text="Status",
+            font=("Inter", 16),
+            fg_color="#f5f5f5",
+            hover_color="#ddd",
+            text_color="#000",
+            height=40,
+        )
+        status.pack(side="left", padx=5)
 
-        button2 = ctk.CTkButton(button_frame, text="Sign In", font=("Inter", 16), fg_color="#18181b", hover_color="#000", height=40)
-        button2.pack(side="left", padx=5)
+        sign_in = ctk.CTkButton(
+            button_frame,
+            text="Sign In",
+            font=("Inter", 16),
+            fg_color="#18181b",
+            hover_color="#000",
+            height=40,
+        )
+        sign_in.pack(side="left", padx=5)
 
-        button3 = ctk.CTkButton(button_frame, text="Sign Out", font=("Inter", 16), fg_color="#18181b", hover_color="#000", height=40)
-        button3.pack(side="left", padx=5)
+        sign_out = ctk.CTkButton(
+            button_frame,
+            text="Sign Out",
+            font=("Inter", 16),
+            fg_color="#18181b",
+            hover_color="#000",
+            height=40,
+        )
+        sign_out.pack(side="left", padx=5)
 
-        button4 = ctk.CTkButton(button_frame, text="Report", font=("Inter", 16),text_color="#000" ,fg_color="#f5f5f5", hover_color="#ddd", height=40)
-        button4.pack(side="left", padx=5)
+        report = ctk.CTkButton(
+            button_frame,
+            text="Report",
+            font=("Inter", 16),
+            text_color="#000",
+            fg_color="#f5f5f5",
+            hover_color="#ddd",
+            height=40,
+        )
+        report.pack(side="left", padx=5)
 
+        def on_sign_in_click():
+            first_name = entries[0].get()
+            last_name = entries[1].get()
+            reg_number = entries[2].get()
+            make = entries[3].get()
+            model = entries[4].get()
+            year = entries[5].get()
+            parked = entries[6].get()
+            vehicle_type = entries[7].get()
+            time_in_str = entries[8].get()
+            time_out_str = entries[9].get()
+
+            try:
+                time_in = datetime.datetime.strptime(time_in_str, "%Y-%m-%d %H:%M:%S")
+                time_out = datetime.datetime.strptime(time_out_str, "%Y-%m-%d %H:%M:%S")
+            except ValueError as e:
+                error_message = ctk.CTkLabel(
+                    payments_frame,
+                    text="Invalid date format",
+                    font=("Inter", 14),
+                    anchor="center",
+                    text_color="#fc3c43",
+                    fg_color="#fff",
+                )
+                error_message.pack(side="top", fill="x", padx=20, pady=0)
+                error_message.after(1000, error_message.destroy)
+                return
+
+            new_vehicle = Cars(
+                first_name=first_name,
+                last_name=last_name,
+                reg_number=reg_number,
+                make=make,
+                model=model,
+                year=year,
+                parked=parked,
+                vehicle_type=vehicle_type,
+                time_in=time_in,
+                time_out=time_out,
+            )
+
+            try:
+                session.add(new_vehicle)
+                session.commit()
+                success_message = ctk.CTkLabel(
+                    payments_frame,
+                    text="Vehicle added successfully!",
+                    font=("Inter", 14),
+                    anchor="center",
+                    text_color="#1ca350",
+                )
+                success_message.pack(side="top", fill="x", padx=20, pady=0)
+                success_message.after(1000, success_message.destroy)
+            except Exception as e:
+                error_message = ctk.CTkLabel(
+                    payments_frame,
+                    text="An error occurred",
+                    font=("Inter", 14),
+                    anchor="center",
+                    text_color="#fc3c43",
+                )
+                error_message.pack(side="top", fill="x", padx=20, pady=0)
+                error_message.after(1000, error_message.destroy)
+
+        def on_sign_out_click():
+            reg_number = entries[2].get()
+
+            vehicle = session.query(Cars).filter_by(reg_number=reg_number).first()
+
+            if vehicle:
+                session.delete(vehicle)
+                session.commit()
+
+        sign_in.configure(command=on_sign_in_click)
+        sign_out.configure(command=on_sign_out_click)
 
     else:
         allotment_frame.pack(side="top", fill="x", pady=20)

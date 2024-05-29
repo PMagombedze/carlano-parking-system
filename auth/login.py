@@ -1,6 +1,11 @@
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import sqlite3
+import sys
+import os
+parent_dir = os.path.abspath(".")
+sys.path.insert(0, parent_dir)
+from database.models import session, Admins
 
 import os
 import webbrowser
@@ -74,15 +79,8 @@ def check_credentials():
     email = textbox2.get()
     password = textbox3.get()
 
-    conn = sqlite3.connect("mydatabase.db")
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT * FROM admins WHERE email=? AND password=?", (email, password)
-    )
-    result = cursor.fetchone()
-
-    if result is not None:
+    admin = session.query(Admins).filter_by(email=email).first()
+    if admin.check_password(password):
         root.destroy()
         os.system("python dashboard/admin.py")
     else:
@@ -95,8 +93,6 @@ def check_credentials():
         )
         error_label.place(relx=0.5, rely=0.8, anchor="center")
         root.after(1000, lambda: error_label.destroy())
-
-    conn.close()
 
 
 frame = ctk.CTkFrame(
