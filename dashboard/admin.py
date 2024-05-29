@@ -180,8 +180,10 @@ submit_button = None
 
 
 def show_payments_frame():
-    global payments_frame, textbox1, textbox2, textbox3, textbox4, textbox5, submit_button
+    global payments_frame,allotment_frame, textbox1, textbox2, textbox3, textbox4, textbox5, submit_button
 
+    if allotment_frame is not None:
+        allotment_frame.pack_forget()
     # Hide frame_container and frame_container2
     frame_container.pack_forget()
     frame_container2.pack_forget()
@@ -319,11 +321,15 @@ payments_button.configure(command=show_payments_frame)
 
 
 def show_dashboard():
-    global payments_frame
+    global payments_frame, allotment_frame
+
 
     # Hide payments_frame
     if payments_frame is not None:
         payments_frame.pack_forget()
+
+    if allotment_frame is not None:
+        allotment_frame.pack_forget()
 
     # Re-pack frame_container and frame_container2
     frame_container.pack(side="top", fill="x", pady=20)
@@ -338,6 +344,51 @@ for button in sidebar.winfo_children():
 
 # Configure the "Dashboard" button to trigger the show_dashboard function
 dashboard_button.configure(command=show_dashboard)
+
+allotment_frame = None
+
+def show_allotment_frame():
+    global allotment_frame, payments_frame
+
+    if payments_frame is not None:
+        payments_frame.pack_forget()
+
+    # Hide frame_container and frame_container2
+    frame_container.pack_forget()
+    frame_container2.pack_forget()
+
+    if allotment_frame is None:
+        # Create frame for allotment
+        allotment_frame = ctk.CTkFrame(
+            root,
+            bg_color="#ff0000",  # Red color
+            fg_color="#fff",
+            border_color="#ddd",
+            width=800,
+            height=400,
+        )
+        allotment_frame.pack(side="top", fill="x", pady=20)
+
+        # Create heading for allotment
+        allotment_heading = ctk.CTkLabel(
+            allotment_frame, text="Allotment", font=("Inter", 20, "bold"), anchor="w"
+        )
+        allotment_heading.pack(side="top", fill="x", padx=20, pady=25)
+
+        # Add any desired widgets to the allotment frame here
+
+    else:
+        allotment_frame.pack(side="top", fill="x", pady=20)
+
+
+# Get the "Allotment" button
+for button in sidebar.winfo_children():
+    if button.cget("text") == "Allotment":
+        allotment_button = button
+        break
+
+# Configure the "Allotment" button to trigger the show_allotment_frame function
+allotment_button.configure(command=show_allotment_frame)
 
 
 root.mainloop()
