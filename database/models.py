@@ -28,6 +28,7 @@ class Cars(Base):
     model = Column(String, nullable=False)
     year = Column(Integer, nullable=False)
     parked = Column(Boolean, nullable=False)
+    vehicle_type = Column(String, nullable=False)
     time_in = Column(DateTime, nullable=False, default=func.now())
     time_out = Column(DateTime, nullable=False, default=func.now())
 
@@ -37,11 +38,3 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 Base.metadata.create_all(engine)
-# Insert sample users
-
-user = Admins(
-    email="percymagoras@gmail.com", password="percy2004"
-)
-
-session.add(user)
-session.commit()

@@ -2,6 +2,11 @@ import customtkinter as ctk
 import paynow
 from dotenv import load_dotenv
 import os
+import sqlite3
+from tkinter import ttk
+from ctkcomponents import CTkTreeview
+from time import sleep
+
 
 root = ctk.CTk()
 root.title("Admin Dashboard")
@@ -37,6 +42,8 @@ for text in button_texts:
 
 for button in sidebar.winfo_children():
     button.configure(hover_color="#ddd")
+
+
 
 exit_button = ctk.CTkButton(
     sidebar,
@@ -77,7 +84,6 @@ search_bar = ctk.CTkEntry(
 )
 search_bar.pack(side="right", fill="y", padx=20)
 
-# Add two frames below top nav
 frame_container = ctk.CTkFrame(
     root, bg_color="#fff", fg_color="#fff", border_color="#ddd", width=800, height=400
 )
@@ -180,16 +186,14 @@ submit_button = None
 
 
 def show_payments_frame():
-    global payments_frame,allotment_frame, textbox1, textbox2, textbox3, textbox4, textbox5, submit_button
+    global payments_frame, allotment_frame, textbox1, textbox2, textbox3, textbox4, textbox5, submit_button
 
     if allotment_frame is not None:
         allotment_frame.pack_forget()
-    # Hide frame_container and frame_container2
     frame_container.pack_forget()
     frame_container2.pack_forget()
 
     if payments_frame is None:
-        # Create frame for payments
         payments_frame = ctk.CTkFrame(
             root,
             bg_color="#fff",
@@ -200,13 +204,10 @@ def show_payments_frame():
         )
         payments_frame.pack(side="top", fill="x", pady=20)
 
-        # Create heading for payments
         payments_heading = ctk.CTkLabel(
             payments_frame, text="Payments", font=("Inter", 20, "bold"), anchor="w"
         )
         payments_heading.pack(side="top", fill="x", padx=20, pady=25)
-
-        # Create 5 textboxes aligned vertically
 
         textbox3 = ctk.CTkEntry(
             payments_frame,
@@ -256,7 +257,6 @@ def show_payments_frame():
         )
         textbox5.pack(side="top", fill="x", padx=20, pady=10)
 
-        # Create a button below the textboxes
         submit_button = ctk.CTkButton(
             payments_frame,
             text="Submit",
@@ -296,7 +296,7 @@ def show_payments_frame():
                 text="Payment successful!",
                 font=("Inter", 14),
                 anchor="center",
-                text_color="#1ca350"
+                text_color="#1ca350",
             )
             payment_status.pack(side="top", fill="x", padx=20, pady=10)
         else:
@@ -305,7 +305,7 @@ def show_payments_frame():
                 text="Payment failed",
                 font=("Inter", 14),
                 anchor="center",
-                text_color="#fc3c43"
+                text_color="#fc3c43",
             )
         payment_status.pack(side="top", fill="x", padx=20, pady=10)
         payment_status.after(1000, payment_status.destroy)
@@ -316,52 +316,57 @@ for button in sidebar.winfo_children():
         payments_button = button
         break
 
-# Configure the "Payments" button to trigger the show_payments_frame function
 payments_button.configure(command=show_payments_frame)
 
 
 def show_dashboard():
     global payments_frame, allotment_frame
 
-
-    # Hide payments_frame
     if payments_frame is not None:
         payments_frame.pack_forget()
 
     if allotment_frame is not None:
         allotment_frame.pack_forget()
 
-    # Re-pack frame_container and frame_container2
     frame_container.pack(side="top", fill="x", pady=20)
     frame_container2.pack(side="top", fill="x", pady=20)
 
 
-# Get the "Dashboard" button
 for button in sidebar.winfo_children():
     if button.cget("text") == "Dashboard":
         dashboard_button = button
         break
 
-# Configure the "Dashboard" button to trigger the show_dashboard function
 dashboard_button.configure(command=show_dashboard)
 
 allotment_frame = None
 
+def fetch_cars_data():
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM cars")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def populate_treeview(treeview, data):
+    treeview.delete(*treeview.get_children())
+    for row in data:
+        treeview.insert('', 'end', values=row)
+
 def show_allotment_frame():
-    global allotment_frame, payments_frame
+    global allotment_frame, payments_frame, treeview
 
     if payments_frame is not None:
         payments_frame.pack_forget()
 
-    # Hide frame_container and frame_container2
     frame_container.pack_forget()
     frame_container2.pack_forget()
 
     if allotment_frame is None:
-        # Create frame for allotment
         allotment_frame = ctk.CTkFrame(
             root,
-            bg_color="#ff0000",  # Red color
+            bg_color="#fff",
             fg_color="#fff",
             border_color="#ddd",
             width=800,
@@ -369,25 +374,42 @@ def show_allotment_frame():
         )
         allotment_frame.pack(side="top", fill="x", pady=20)
 
-        # Create heading for allotment
         allotment_heading = ctk.CTkLabel(
             allotment_frame, text="Allotment", font=("Inter", 20, "bold"), anchor="w"
         )
         allotment_heading.pack(side="top", fill="x", padx=20, pady=25)
+        
+        treeview = ttk.Treeview(
+            allotment_frame,
+            columns=("id", "make", "model", "color", "owner"),
+            height=15,
+            show="headings",
+        )
 
-        # Add any desired widgets to the allotment frame here
+        treeview.heading("id", text="ID")
+        treeview.heading("make", text="Make")
+        treeview.heading("model", text="Model")
+        treeview.heading("color", text="Color")
+        treeview.heading("owner", text="Owner")
+
+        treeview.column("id", width=50, anchor="center")
+        treeview.column("make", width=150, anchor="center")
+        treeview.column("model", width=150, anchor="center")
+        treeview.column("color", width=100, anchor="center")
+        treeview.column("owner", width=200, anchor="center")
+
+        treeview.pack(side="top", fill="x", padx=20, pady=10)
+
+        populate_treeview(treeview, fetch_cars_data())
 
     else:
         allotment_frame.pack(side="top", fill="x", pady=20)
 
-
-# Get the "Allotment" button
 for button in sidebar.winfo_children():
     if button.cget("text") == "Allotment":
         allotment_button = button
         break
 
-# Configure the "Allotment" button to trigger the show_allotment_frame function
 allotment_button.configure(command=show_allotment_frame)
 
 
