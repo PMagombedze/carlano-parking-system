@@ -1,4 +1,7 @@
 import customtkinter as ctk
+import paynow
+from dotenv import load_dotenv
+import os
 
 root = ctk.CTk()
 root.title("Admin Dashboard")
@@ -19,7 +22,7 @@ sidebar = ctk.CTkFrame(
 )
 sidebar.pack(side="left", fill="y")
 
-button_texts = ["Home", "Dashboard", "Allotment", "Users", "Payments"]
+button_texts = ["Home", "Dashboard", "Allotment", "Payments"]
 
 for text in button_texts:
     button = ctk.CTkButton(
@@ -163,9 +166,7 @@ frame4_heading = ctk.CTkLabel(
 )
 frame4_heading.pack(side="top", fill="x", padx=50, pady=25)
 
-frame4_subheading = ctk.CTkLabel(
-    frame4, text=f"Bikes", font=("Inter", 16), anchor="w"
-)
+frame4_subheading = ctk.CTkLabel(frame4, text=f"Bikes", font=("Inter", 16), anchor="w")
 frame4_subheading.pack(side="top", fill="x", padx=50, pady=35)
 
 
@@ -176,6 +177,7 @@ textbox3 = None
 textbox4 = None
 textbox5 = None
 submit_button = None
+
 
 def show_payments_frame():
     global payments_frame, textbox1, textbox2, textbox3, textbox4, textbox5, submit_button
@@ -203,7 +205,6 @@ def show_payments_frame():
         payments_heading.pack(side="top", fill="x", padx=20, pady=25)
 
         # Create 5 textboxes aligned vertically
-        
 
         textbox3 = ctk.CTkEntry(
             payments_frame,
@@ -224,7 +225,7 @@ def show_payments_frame():
             width=200,
             height=40,
             font=("Inter", 16),
-            placeholder_text="Bank Account",
+            placeholder_text="Email",
             fg_color="#fff",
         )
         bank.pack(side="top", fill="x", padx=20, pady=10)
@@ -260,15 +261,54 @@ def show_payments_frame():
             font=("Inter", 16),
             fg_color="#18181b",
             hover_color="#000",
-            command=lambda: print("Submit button clicked"),
+            command=lambda: make_payment(),
             height=40,
-            text_color="#fff"
+            text_color="#fff",
         )
         submit_button.pack(side="top", fill="x", padx=20, pady=10)
     else:
         payments_frame.pack(side="top", fill="x", pady=20)
 
-# Get the "Payments" button
+    def make_payment():
+        bank_account = bank.get()
+        amount = textbox4.get()
+
+        load_dotenv()
+
+        paynow_api = paynow.Paynow(
+            integration_id=os.getenv("PAYNOW_INTEGRATION_ID"),
+            integration_key=os.getenv("PAYNOW_INTEGRATION_KEY"),
+            return_url=os.getenv("PAYNOW_RETURN_URL"),
+            result_url=os.getenv("PAYNOW_RESULT_URL"),
+        )
+
+        payment = paynow_api.create_payment("Parking penalty", bank_account)
+
+        payment.add("Parking penalty", amount)
+
+        response = paynow_api.send_mobile(payment, "0786486538", "ecocash")
+
+        if response.success:
+            payment_status = ctk.CTkLabel(
+                payments_frame,
+                text="Payment successful!",
+                font=("Inter", 14),
+                anchor="center",
+                text_color="#1ca350"
+            )
+            payment_status.pack(side="top", fill="x", padx=20, pady=10)
+        else:
+            payment_status = ctk.CTkLabel(
+                payments_frame,
+                text="Payment failed",
+                font=("Inter", 14),
+                anchor="center",
+                text_color="#fc3c43"
+            )
+        payment_status.pack(side="top", fill="x", padx=20, pady=10)
+        payment_status.after(1000, payment_status.destroy)
+
+
 for button in sidebar.winfo_children():
     if button.cget("text") == "Payments":
         payments_button = button
@@ -289,6 +329,7 @@ def show_dashboard():
     frame_container.pack(side="top", fill="x", pady=20)
     frame_container2.pack(side="top", fill="x", pady=20)
 
+
 # Get the "Dashboard" button
 for button in sidebar.winfo_children():
     if button.cget("text") == "Dashboard":
@@ -297,5 +338,6 @@ for button in sidebar.winfo_children():
 
 # Configure the "Dashboard" button to trigger the show_dashboard function
 dashboard_button.configure(command=show_dashboard)
+
 
 root.mainloop()
