@@ -3,9 +3,6 @@ import paynow
 from dotenv import load_dotenv
 import os
 import sqlite3
-from tkinter import ttk
-from ctkcomponents import CTkTreeview
-from time import sleep
 
 
 root = ctk.CTk()
@@ -42,7 +39,6 @@ for text in button_texts:
 
 for button in sidebar.winfo_children():
     button.configure(hover_color="#ddd")
-
 
 
 exit_button = ctk.CTkButton(
@@ -341,18 +337,6 @@ dashboard_button.configure(command=show_dashboard)
 
 allotment_frame = None
 
-def fetch_cars_data():
-    conn = sqlite3.connect('mydatabase.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM cars")
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-def populate_treeview(treeview, data):
-    treeview.delete(*treeview.get_children())
-    for row in data:
-        treeview.insert('', 'end', values=row)
 
 def show_allotment_frame():
     global allotment_frame, payments_frame, treeview
@@ -378,32 +362,59 @@ def show_allotment_frame():
             allotment_frame, text="Allotment", font=("Inter", 20, "bold"), anchor="w"
         )
         allotment_heading.pack(side="top", fill="x", padx=20, pady=25)
-        
-        treeview = ttk.Treeview(
-            allotment_frame,
-            columns=("id", "make", "model", "color", "owner"),
-            height=15,
-            show="headings",
+
+    entry_frame = ctk.CTkFrame(
+        allotment_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd"
+    )
+    entry_frame.pack(side="top", fill="x", pady=20)
+
+    placeholder_texts = [
+        "First Name",
+        "Last Name",
+        "Reg Number",
+        "Make",
+        "Model",
+        "Year",
+        "Parked",
+        "Vehicle Type",
+        "Time In",
+        "Time Out",
+    ]
+
+    entries = []
+    for i in range(10):
+        entry = ctk.CTkEntry(
+            entry_frame,
+            border_width=1,
+            border_color="#ddd",
+            width=200,
+            height=40,
+            font=("Inter", 16),
+            placeholder_text=placeholder_texts[i],
+            fg_color="#fff",
         )
+        entry.grid(row=i // 2, column=i % 2, padx=10, pady=10)
+        entries.append(entry)
 
-        treeview.heading("id", text="ID")
-        treeview.heading("make", text="Make")
-        treeview.heading("model", text="Model")
-        treeview.heading("color", text="Color")
-        treeview.heading("owner", text="Owner")
+        button_frame = ctk.CTkFrame(entry_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd")
+        button_frame.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
 
-        treeview.column("id", width=50, anchor="center")
-        treeview.column("make", width=150, anchor="center")
-        treeview.column("model", width=150, anchor="center")
-        treeview.column("color", width=100, anchor="center")
-        treeview.column("owner", width=200, anchor="center")
+        button1 = ctk.CTkButton(button_frame, text="Status", font=("Inter", 16), fg_color="#f5f5f5", hover_color="#ddd",text_color="#000", height=40)
+        button1.pack(side="left", padx=5)
 
-        treeview.pack(side="top", fill="x", padx=20, pady=10)
+        button2 = ctk.CTkButton(button_frame, text="Sign In", font=("Inter", 16), fg_color="#18181b", hover_color="#000", height=40)
+        button2.pack(side="left", padx=5)
 
-        populate_treeview(treeview, fetch_cars_data())
+        button3 = ctk.CTkButton(button_frame, text="Sign Out", font=("Inter", 16), fg_color="#18181b", hover_color="#000", height=40)
+        button3.pack(side="left", padx=5)
+
+        button4 = ctk.CTkButton(button_frame, text="Report", font=("Inter", 16),text_color="#000" ,fg_color="#f5f5f5", hover_color="#ddd", height=40)
+        button4.pack(side="left", padx=5)
+
 
     else:
         allotment_frame.pack(side="top", fill="x", pady=20)
+
 
 for button in sidebar.winfo_children():
     if button.cget("text") == "Allotment":
