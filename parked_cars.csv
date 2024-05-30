@@ -1,0 +1,2 @@
+first_name,last_name,reg_number,make,model,year,parked,vehicle_type,time_in,time_out
+John,Doe,ABC1234,Toyota,Corolla,2021,Yes,Car,2022-12-27 08:26:49,2022-12-27 18:26:49

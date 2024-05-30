@@ -5,6 +5,7 @@ import os
 import sys
 import os
 import datetime
+import csv
 
 parent_dir = os.path.abspath(".")
 sys.path.insert(0, parent_dir)
@@ -541,6 +542,7 @@ def show_allotment_frame():
             fg_color="#f5f5f5",
             hover_color="#ddd",
             height=40,
+            command=show_report
         )
         report.pack(side="left", padx=5)
 
@@ -681,5 +683,26 @@ for button in sidebar.winfo_children():
 
 allotment_button.configure(command=show_allotment_frame)
 
+def show_report():
+    parked_cars = session.query(Cars).filter_by(parked="Yes").all()
+
+    with open('parked_cars.csv', mode='w', newline='') as csvfile:
+        fieldnames = ['first_name', 'last_name', 'reg_number', 'make', 'model', 'year', 'parked', 'vehicle_type', 'time_in', 'time_out']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for car in parked_cars:
+            writer.writerow({'first_name': car.first_name, 'last_name': car.last_name, 'reg_number': car.reg_number, 'make': car.make, 'model': car.model, 'year': car.year, 'parked': car.parked, 'vehicle_type': car.vehicle_type, 'time_in': car.time_in, 'time_out': car.time_out})
+
+    report_status = ctk.CTkLabel(
+        allotment_frame,
+        text="Report generated successfully!",
+        font=("Inter", 14),
+        anchor="center",
+        text_color="#1ca350",
+        fg_color="#fff"
+    )
+    report_status.pack(side="top", fill="x", padx=20, pady=0)
+    report_status.after(1000, report_status.destroy)
 
 root.mainloop()
