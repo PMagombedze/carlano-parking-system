@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import sqlite3
 import sys
 import os
+
 parent_dir = os.path.abspath(".")
 sys.path.insert(0, parent_dir)
 from database.models import session, Admins
@@ -80,7 +81,7 @@ def check_credentials():
     password = textbox3.get()
 
     admin = session.query(Admins).filter_by(email=email).first()
-    if admin.check_password(password):
+    if admin is not None and admin.check_password(password):
         root.destroy()
         os.system("python dashboard/admin.py")
     else:
