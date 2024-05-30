@@ -274,7 +274,7 @@ def show_payments_frame():
         )
         payments_heading.pack(side="top", fill="x", padx=20, pady=25)
 
-        textbox3 = ctk.CTkEntry(
+        reg_number = ctk.CTkEntry(
             payments_frame,
             border_width=1,
             border_color="#ddd",
@@ -284,7 +284,8 @@ def show_payments_frame():
             placeholder_text="Reg Number",
             fg_color="#fff",
         )
-        textbox3.pack(side="top", fill="x", padx=20, pady=10)
+        reg_number.pack(side="top", fill="x", padx=20, pady=10)
+       
 
         bank = ctk.CTkEntry(
             payments_frame,
@@ -384,6 +385,7 @@ for button in sidebar.winfo_children():
 payments_button.configure(command=show_payments_frame)
 
 
+
 def show_dashboard():
     global payments_frame, allotment_frame
 
@@ -409,6 +411,7 @@ for button in sidebar.winfo_children():
 dashboard_button.configure(command=show_dashboard)
 
 allotment_frame = None
+
 
 
 def show_allotment_frame():
@@ -444,7 +447,7 @@ def show_allotment_frame():
     placeholder_texts = [
         "First Name",
         "Last Name",
-        "Reg Number",
+        "Reg No (Press Enter)",
         "Make",
         "Model",
         "Year",
@@ -453,7 +456,6 @@ def show_allotment_frame():
         "Time In",
         "Time Out",
     ]
-
     entries = []
     for i in range(10):
         entry = ctk.CTkEntry(
@@ -469,6 +471,25 @@ def show_allotment_frame():
         entry.grid(row=i // 2, column=i % 2, padx=10, pady=10)
         entries.append(entry)
 
+        if i == 2:
+            def on_reg_number_enter(event):
+                reg_number = entries[2].get()
+                vehicle = session.query(Cars).filter_by(reg_number=reg_number).first()
+
+                if vehicle:
+                    entries[0].insert(0, vehicle.first_name)
+                    entries[1].insert(0, vehicle.last_name)
+                    entries[3].insert(0, vehicle.make)
+                    entries[4].insert(0, vehicle.model)
+                    entries[5].insert(0, vehicle.year)
+                    entries[6].insert(0, vehicle.parked)
+                    entries[7].insert(0, vehicle.vehicle_type)
+                    entries[8].insert(0, vehicle.time_in)
+                    entries[9].insert(0, vehicle.time_out)
+
+            entry.bind("<Return>", on_reg_number_enter) 
+
+        
         button_frame = ctk.CTkFrame(
             entry_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd"
         )
@@ -683,16 +704,43 @@ for button in sidebar.winfo_children():
 
 allotment_button.configure(command=show_allotment_frame)
 
+
+
+
 def show_report():
     parked_cars = session.query(Cars).filter_by(parked="Yes").all()
 
-    with open('parked_cars.csv', mode='w', newline='') as csvfile:
-        fieldnames = ['first_name', 'last_name', 'reg_number', 'make', 'model', 'year', 'parked', 'vehicle_type', 'time_in', 'time_out']
+    with open("parked_cars.csv", mode="w", newline="") as csvfile:
+        fieldnames = [
+            "first_name",
+            "last_name",
+            "reg_number",
+            "make",
+            "model",
+            "year",
+            "parked",
+            "vehicle_type",
+            "time_in",
+            "time_out",
+        ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
         for car in parked_cars:
-            writer.writerow({'first_name': car.first_name, 'last_name': car.last_name, 'reg_number': car.reg_number, 'make': car.make, 'model': car.model, 'year': car.year, 'parked': car.parked, 'vehicle_type': car.vehicle_type, 'time_in': car.time_in, 'time_out': car.time_out})
+            writer.writerow(
+                {
+                    "first_name": car.first_name,
+                    "last_name": car.last_name,
+                    "reg_number": car.reg_number,
+                    "make": car.make,
+                    "model": car.model,
+                    "year": car.year,
+                    "parked": car.parked,
+                    "vehicle_type": car.vehicle_type,
+                    "time_in": car.time_in,
+                    "time_out": car.time_out,
+                }
+            )
 
     report_status = ctk.CTkLabel(
         allotment_frame,
@@ -700,9 +748,10 @@ def show_report():
         font=("Inter", 14),
         anchor="center",
         text_color="#1ca350",
-        fg_color="#fff"
+        fg_color="#fff",
     )
     report_status.pack(side="top", fill="x", padx=20, pady=0)
     report_status.after(1000, report_status.destroy)
+
 
 root.mainloop()
