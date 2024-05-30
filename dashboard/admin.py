@@ -572,42 +572,91 @@ def show_allotment_frame():
                 error_message.after(1000, error_message.destroy)
                 return
 
-            new_vehicle = Cars(
-                first_name=first_name,
-                last_name=last_name,
-                reg_number=reg_number,
-                make=make,
-                model=model,
-                year=year,
-                parked=parked,
-                vehicle_type=vehicle_type,
-                time_in=time_in,
-                time_out=time_out,
-            )
+            vehicle = session.query(Cars).filter_by(reg_number=reg_number).first()
 
-            try:
-                session.add(new_vehicle)
-                session.commit()
-                success_message = ctk.CTkLabel(
-                    payments_frame,
-                    text="Vehicle added successfully!",
-                    font=("Inter", 14),
-                    anchor="center",
-                    text_color="#1ca350",
-                    fg_color="#fff",
+            if vehicle:
+                # Update existing record
+                if first_name:
+                    vehicle.first_name = first_name
+                if last_name:
+                    vehicle.last_name = last_name
+                if reg_number:
+                    vehicle.reg_number = reg_number
+                if make:
+                    vehicle.make = make
+                if model:
+                    vehicle.model = model
+                if year:
+                    vehicle.year = year
+                if parked:
+                    vehicle.parked = parked
+                if vehicle_type:
+                    vehicle.vehicle_type = vehicle_type
+                if time_in:
+                    vehicle.time_in = time_in
+                if time_out:
+                    vehicle.time_out = time_out
+
+                try:
+                    session.commit()
+                    success_message = ctk.CTkLabel(
+                        payments_frame,
+                        text="Vehicle updated successfully!",
+                        font=("Inter", 14),
+                        anchor="center",
+                        text_color="#1ca350",
+                        fg_color="#fff",
+                    )
+                    success_message.pack(side="top", fill="x", padx=20, pady=0)
+                    success_message.after(1000, success_message.destroy)
+                except Exception as e:
+                    error_message = ctk.CTkLabel(
+                        payments_frame,
+                        text="An error occurred",
+                        font=("Inter", 14),
+                        anchor="center",
+                        text_color="#fc3c43",
+                    )
+                    error_message.pack(side="top", fill="x", padx=20, pady=0)
+                    error_message.after(1000, error_message.destroy)
+            else:
+                # Add new record
+                new_vehicle = Cars(
+                    first_name=first_name,
+                    last_name=last_name,
+                    reg_number=reg_number,
+                    make=make,
+                    model=model,
+                    year=year,
+                    parked=parked,
+                    vehicle_type=vehicle_type,
+                    time_in=time_in,
+                    time_out=time_out,
                 )
-                success_message.pack(side="top", fill="x", padx=20, pady=0)
-                success_message.after(1000, success_message.destroy)
-            except Exception as e:
-                error_message = ctk.CTkLabel(
-                    payments_frame,
-                    text="An error occurred",
-                    font=("Inter", 14),
-                    anchor="center",
-                    text_color="#fc3c43",
-                )
-                error_message.pack(side="top", fill="x", padx=20, pady=0)
-                error_message.after(1000, error_message.destroy)
+
+                try:
+                    session.add(new_vehicle)
+                    session.commit()
+                    success_message = ctk.CTkLabel(
+                        payments_frame,
+                        text="Vehicle added successfully!",
+                        font=("Inter", 14),
+                        anchor="center",
+                        text_color="#1ca350",
+                        fg_color="#fff",
+                    )
+                    success_message.pack(side="top", fill="x", padx=20, pady=0)
+                    success_message.after(1000, success_message.destroy)
+                except Exception as e:
+                    error_message = ctk.CTkLabel(
+                        payments_frame,
+                        text="An error occurred",
+                        font=("Inter", 14),
+                        anchor="center",
+                        text_color="#fc3c43",
+                    )
+                    error_message.pack(side="top", fill="x", padx=20, pady=0)
+                    error_message.after(1000, error_message.destroy)
 
         def on_sign_out_click():
             reg_number = entries[2].get()
