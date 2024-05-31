@@ -31,7 +31,7 @@ root.config(background="#fff")
 def google_login():
     try:
         flow = InstalledAppFlow.from_client_secrets_file(
-            "credentials.json",
+            ".credentials.json",
             scopes=["openid", "https://www.googleapis.com/auth/userinfo.email"],
         )
         auth_url, _ = flow.authorization_url(prompt="select_account")
