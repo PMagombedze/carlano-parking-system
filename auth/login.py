@@ -35,7 +35,7 @@ def google_login():
             scopes=["openid", "https://www.googleapis.com/auth/userinfo.email"],
         )
         auth_url, _ = flow.authorization_url(prompt="select_account")
-        webbrowser.open(auth_url)
+        webbrowser.open(_)
 
         creds = flow.run_local_server(port=0)
 

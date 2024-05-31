@@ -6,6 +6,8 @@ import sys
 import os
 import datetime
 import csv
+import re
+
 
 parent_dir = os.path.abspath(".")
 sys.path.insert(0, parent_dir)
@@ -18,6 +20,14 @@ root.minsize(width=800, height=600)
 root.maxsize(width=800, height=600)
 root.resizable(False, False)
 root.config(background="#fff")
+
+
+def check_reg_no_format(string):
+    pattern = r"^h\d{6}[a-zA-Z]$"
+    if re.match(pattern, string):
+        return True
+    else:
+        return False
 
 
 def update_dashboard():
@@ -285,7 +295,6 @@ def show_payments_frame():
             fg_color="#fff",
         )
         reg_number.pack(side="top", fill="x", padx=20, pady=10)
-       
 
         bank = ctk.CTkEntry(
             payments_frame,
@@ -385,7 +394,6 @@ for button in sidebar.winfo_children():
 payments_button.configure(command=show_payments_frame)
 
 
-
 def show_dashboard():
     global payments_frame, allotment_frame
 
@@ -411,7 +419,6 @@ for button in sidebar.winfo_children():
 dashboard_button.configure(command=show_dashboard)
 
 allotment_frame = None
-
 
 
 def show_allotment_frame():
@@ -472,6 +479,7 @@ def show_allotment_frame():
         entries.append(entry)
 
         if i == 2:
+
             def on_reg_number_enter(event):
                 reg_number = entries[2].get()
                 vehicle = session.query(Cars).filter_by(reg_number=reg_number).first()
@@ -487,9 +495,8 @@ def show_allotment_frame():
                     entries[8].insert(0, vehicle.time_in)
                     entries[9].insert(0, vehicle.time_out)
 
-            entry.bind("<Return>", on_reg_number_enter) 
+            entry.bind("<Return>", on_reg_number_enter)
 
-        
         button_frame = ctk.CTkFrame(
             entry_frame, bg_color="#fff", fg_color="#fff", border_color="#ddd"
         )
@@ -563,7 +570,7 @@ def show_allotment_frame():
             fg_color="#f5f5f5",
             hover_color="#ddd",
             height=40,
-            command=show_report
+            command=show_report,
         )
         report.pack(side="left", padx=5)
 
@@ -658,18 +665,30 @@ def show_allotment_frame():
                 )
 
                 try:
-                    session.add(new_vehicle)
-                    session.commit()
-                    success_message = ctk.CTkLabel(
-                        payments_frame,
-                        text="Vehicle added successfully!",
-                        font=("Inter", 14),
-                        anchor="center",
-                        text_color="#1ca350",
-                        fg_color="#fff",
-                    )
-                    success_message.pack(side="top", fill="x", padx=20, pady=0)
-                    success_message.after(1000, success_message.destroy)
+                    if check_reg_no_format(reg_number):
+                        session.add(new_vehicle)
+                        session.commit()
+                        success_message = ctk.CTkLabel(
+                            payments_frame,
+                            text="Vehicle added successfully!",
+                            font=("Inter", 14),
+                            anchor="center",
+                            text_color="#1ca350",
+                            fg_color="#fff",
+                        )
+                        success_message.pack(side="top", fill="x", padx=20, pady=0)
+                        success_message.after(1000, success_message.destroy)
+                    else:
+                        message = ctk.CTkLabel(
+                            payments_frame,
+                            text="Invalid Reg No",
+                            font=("Inter", 14),
+                            anchor="center",
+                            text_color="#fc3c43",
+                            fg_color="#fff",
+                        )
+                        message.pack(side="top", fill="x", padx=20, pady=0)
+                        message.after(1000, message.destroy)
                 except Exception as e:
                     error_message = ctk.CTkLabel(
                         payments_frame,
@@ -677,6 +696,7 @@ def show_allotment_frame():
                         font=("Inter", 14),
                         anchor="center",
                         text_color="#fc3c43",
+                        fg_color="#fff",
                     )
                     error_message.pack(side="top", fill="x", padx=20, pady=0)
                     error_message.after(1000, error_message.destroy)
@@ -689,6 +709,16 @@ def show_allotment_frame():
             if vehicle:
                 session.delete(vehicle)
                 session.commit()
+                out_message = ctk.CTkLabel(
+                    payments_frame,
+                    text=f"{reg_number} signed out",
+                    font=("Inter", 14),
+                    anchor="center",
+                    text_color="#1ca350",
+                    fg_color="#fff",
+                )
+                out_message.pack(side="top", fill="x", padx=20, pady=0)
+                out_message.after(1000, out_message.destroy)
 
         sign_in.configure(command=on_sign_in_click)
         sign_out.configure(command=on_sign_out_click)
@@ -703,8 +733,6 @@ for button in sidebar.winfo_children():
         break
 
 allotment_button.configure(command=show_allotment_frame)
-
-
 
 
 def show_report():

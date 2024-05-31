@@ -40,7 +40,7 @@ class Cars(Base):
     parked = Column(String, nullable=False)
     vehicle_type = Column(String, nullable=False)
     time_in = Column(DateTime, nullable=False, default=func.now())
-    time_out = Column(DateTime, nullable=True, default=func.now())
+    time_out = Column(DateTime, nullable=False, default=func.now())
 
 
 engine = create_engine("sqlite:///mydatabase.db")
