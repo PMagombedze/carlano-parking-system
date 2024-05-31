@@ -3,7 +3,6 @@ import paynow
 from dotenv import load_dotenv
 import os
 import sys
-import os
 import datetime
 import csv
 import re
@@ -363,7 +362,7 @@ def show_payments_frame():
 
         payment.add("Parking penalty", amount)
 
-        response = paynow_api.send_mobile(payment, "0786486538", "ecocash")
+        response = paynow_api.send_mobile(payment, os.getenv("PAYNOW_PHONE"), "ecocash")
 
         if response.success:
             payment_status = ctk.CTkLabel(
